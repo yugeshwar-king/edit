@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal for Suruchi</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: -2;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .container {
+            text-align: center;
+            animation: fadeIn 3s ease-in-out;
+            z-index: 1;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 3em;
+            color: #ffffff;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        p {
+            font-size: 1.5em;
+            color: #FFFF00;
+            margin: 20px 0;
+        }
+        
+        .heart {
+            position: relative;
+            width: 0px;
+            height: 0px;
+            margin: 0 auto;
+            background: #ff6b6b;
+            transform: rotate(-45deg);
+            animation: beat 1s infinite;
+        }
+        
+        .heart:before,
+        .heart:after {
+            content: "";
+            position: absolute;
+            width: 0px;
+            height: 0px;
+            background: #ff6b6b;
+            border-radius: 50%;
+        }
+        
+        .heart:before {
+            top: -50px;
+            left: 0;
+        }
+        
+        .heart:after {
+            left: 50px;
+            top: 0;
+        }
+        
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes beat {
+            0%,
+            100% {
+                transform: scale(1) rotate(-45deg);
+            }
+            50% {
+                transform: scale(1.1) rotate(-45deg);
+            }
+        }
+        
+        .button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            color: #ffffff;
+            background-color: #ee1414;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .button:hover {
+            background-color: #e63946;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+        
+        .modal img {
+            width: 70%;
+            max-width: 600px;
+            border-radius: 15px;
+        }
+        
+        .modal.open {
+            display: flex;
+        }
+        
+        .modal .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            color: white;
+            cursor: pointer;
+            z-index: 3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Adding the iframe background (Website as background) -->
+    <iframe src="https://example.com" frameborder="0" allowfullscreen></iframe>
+
+    <!-- Canvas for heart particle effect -->
+    <canvas id="heartCanvas"></canvas>
+
+    <div class="container">
+        <div class="heart"></div>
+        <h1>Suruchi, Will You Be Mine Forever?</h1>
+        <p>You make my world brighter, and my heart beats for you. 💖</p>
+        <button class="button" onclick="startAudio()">Yes, I Will!</button>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <span class="close-btn" onclick="closeModal()">×</span>
+        <img src="asset/image/balllon.png" alt="Proposal Image">
+    </div>
+
+    <script>
+        // Heart particle effect
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+
+        class Particle {
+            constructor(x, y, size, speedX, speedY, color) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.speedX = speedX;
+                this.speedY = speedY;
+                this.color = color;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.size -= 0.05;
+
+                if (this.size <= 0.2) {
+                    this.size = 0;
+                }
+            }
+        }
+
+        function createHeartParticles() {
+            const heartShape = [];
+            for (let angle = 0; angle < 360; angle += 1) {
+                const radian = angle * Math.PI / 180;
+                const x = 16 * Math.pow(Math.sin(radian), 3);
+                const y = 13 * Math.cos(radian) - 5 * Math.cos(2 * radian) - 2 * Math.cos(3 * radian) - Math.cos(4 * radian);
+
+                heartShape.push({
+                    x: x * 15 + canvas.width / 2,
+                    y: -y * 15 + canvas.height / 2
+                });
+            }
+
+            for (let point of heartShape) {
+                for (let i = 0; i < 5; i++) {
+                    const size = Math.random() * 3 + 2;
+                    const speedX = Math.random() * 2 - 1;
+                    const speedY = Math.random() * 2 - 1;
+                    const color = `rgba(255, 0, 0, ${Math.random()})`;
+
+                    particlesArray.push(new Particle(point.x, point.y, size, speedX, speedY, color));
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (particlesArray.length < 500) {
+                createHeartParticles();
+            }
+
+            particlesArray.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+
+                if (particle.size <= 0) {
+                    particlesArray.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Start audio function
+        function startAudio() {
+            const audio = new Audio('asset/music/BUkhar.mp3');
+            audio.loop = true;
+            audio.play(); // Start the music upon user click
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('open');
+        }
+
+        // Close the modal and display message
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('open');
+            alert('Suruchi, you are my everything! ❤');
+        }
+    </script>
+</body>
+
+</html>
